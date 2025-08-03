@@ -25,6 +25,24 @@ import re
 import config
 import os
 
+ADMINS_FILE = "admins.json"
+
+# Загрузка админов из файла
+def load_admins():
+    if not os.path.exists(ADMINS_FILE):
+        return [MAIN_ADMIN_ID]
+    try:
+        with open(ADMINS_FILE, "r") as f:
+            return json.load(f)
+    except Exception:
+        return [MAIN_ADMIN_ID]
+
+# Сохранение админов в файл
+def save_admins(admins):
+    with open(ADMINS_FILE, "w") as f:
+        json.dump(admins, f)
+
+ADMINS = load_admins()
 CONNECTIONS_FILE = "business_connections.json"
 
 TOKEN = config.BOT_TOKEN
@@ -562,7 +580,25 @@ async def test(message: Message):
         await message.reply("Нет доступа.")
         return
     await message.answer("Проверка выполнена. Бот готов к работе!")
+@dp.message(F.text.startswith("/add_admin"))
+async def add_admin_handler(message: Message):
+    if message.from_user.id != MAIN_ADMIN_ID:
+        await message.reply("❌ Только главный админ может добавлять других админов.")
+        return
 
+    args = message.text.strip().split()
+    if len(args) != 2 or not args[1].isdigit():
+        await message.reply("⚠️ Использование: /add_admin <user_id>")
+        return
+
+    new_admin_id = int(args[1])
+    if new_admin_id in ADMINS:
+        await message.reply("✅ Этот пользователь уже является админом.")
+        return
+
+    ADMINS.append(new_admin_id)
+    save_admins(ADMINS)
+    await message.reply(f"✅ Пользователь с ID {new_admin_id} добавлен в список админов.")
 async def main():
     print("Made with love by @antistoper")
     await dp.start_polling(bot)
@@ -570,4 +606,5 @@ async def main():
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     asyncio.run(main())
+
 
